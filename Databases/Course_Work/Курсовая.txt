@@ -1,0 +1,356 @@
+
+-- -----------------------------------------------------
+-- Table WatcherType
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS WatcherType (
+  idWatcherType INT NOT NULL,
+  WatcherTypeName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idWatcherType))
+
+
+-- -----------------------------------------------------
+-- Table GenericSin
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS GenericSin (
+  idGenericSin INT NOT NULL,
+  GenericSinName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idGenericSin))
+
+
+-- -----------------------------------------------------
+-- Table Circle
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Circle (
+  idCircle INT NOT NULL,
+  idGenericSin INT NOT NULL,
+  CircleName VARCHAR(45) NULL,
+  PRIMARY KEY (idCircle),
+  CONSTRAINT fk_Circle_GenericSin1
+    FOREIGN KEY (idGenericSin)
+    REFERENCES GenericSin (idGenericSin)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table Punishment
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Punishment (
+  idPunishment VARCHAR(45) NOT NULL,
+  PunishmentName VARCHAR(45) NOT NULL,
+  PunishmentEXP INT NOT NULL,
+  idWatcherType INT NOT NULL,
+  PunismentRequiredWatcherAmountOnOne INT NOT NULL,
+  PunishmentCapacity INT NULL,
+  PRIMARY KEY (idPunishment),
+  CONSTRAINT fk_Punishment_WatcherType1
+    FOREIGN KEY (idWatcherType)
+    REFERENCES WatcherType (idWatcherType)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table SpecificSin
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS SpecificSin (
+  idSpecificSin INT NOT NULL,
+  idGenericSin INT NOT NULL,
+  SpecificSinName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idSpecificSin),
+  CONSTRAINT fk_SpecificSin_GenericSin1
+    FOREIGN KEY (idGenericSin)
+    REFERENCES GenericSin (idGenericSin)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table SubCircle
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS SubCircle (
+  idSubCircle INT NOT NULL,
+  idCircle INT NOT NULL,
+  idSpecificSin INT NOT NULL,
+  idPunishment VARCHAR(45) NOT NULL,
+  SubCirclePunishmentMaxAmount INT NULL,
+  PRIMARY KEY (idSubCircle),
+  CONSTRAINT fk_SubCircle_Circle1
+    FOREIGN KEY (idCircle)
+    REFERENCES Circle (idCircle)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_SubCircle_Punishment1
+    FOREIGN KEY (idPunishment)
+    REFERENCES Punishment (idPunishment)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_SubCircle_SpecificSin1
+    FOREIGN KEY (idSpecificSin)
+    REFERENCES SpecificSin (idSpecificSin)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table Guardian
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Guardian (
+  idGuardian INT NOT NULL,
+  idCircle INT NOT NULL,
+  GuardianName VARCHAR(45) NOT NULL,
+  GuardianMercy INT NULL,
+  PRIMARY KEY (idGuardian),
+  CONSTRAINT fk_Guardian_Circle1
+    FOREIGN KEY (idCircle)
+    REFERENCES Circle (idCircle)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table Tormented
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Tormented (
+  idTormented INT NOT NULL,
+  idSubCircle INT NOT NULL,
+  TormentedName VARCHAR(45) NOT NULL,
+  TormentedIsMan BOOLEAN NULL,
+  TormentedDateOfDeath DATE NULL,
+  PRIMARY KEY (idTormented),
+  CONSTRAINT fk_Tormented_SubCircle1
+    FOREIGN KEY (idSubCircle)
+    REFERENCES SubCircle (idSubCircle)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table Assignment
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Assignment (
+  idTormented INT NOT NULL,
+  AssignmentDate DATE NOT NULL,
+  idGuardian INT NOT NULL,
+  idSubCircle INT NOT NULL,
+  AssignmentApproval BOOLEAN NOT NULL,
+  TormentedSurrentPain INT NOT NULL,
+  PRIMARY KEY (idTormented, AssignmentDate),
+  CONSTRAINT fk_Assignment_Guardian1
+    FOREIGN KEY (idGuardian)
+    REFERENCES Guardian (idGuardian)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_Assignment_SubCircle1
+    FOREIGN KEY (idSubCircle)
+    REFERENCES SubCircle (idSubCircle)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_Assignment_Tormented1
+    FOREIGN KEY (idTormented)
+    REFERENCES Tormented (idTormented)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table Tormented_has_SpecificSin
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Tormented_has_SpecificSin (
+  Tormented_idTormented INT NOT NULL,
+  SpecificSin_idSpecificSin INT NOT NULL,
+  SeverityOfTheSin INT NOT NULL,
+  PRIMARY KEY (Tormented_idTormented, SpecificSin_idSpecificSin),
+  CONSTRAINT fk_Tormented_has_SpecificSin_Tormented1
+    FOREIGN KEY (Tormented_idTormented)
+    REFERENCES Tormented (idTormented)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_Tormented_has_SpecificSin_SpecificSin1
+    FOREIGN KEY (SpecificSin_idSpecificSin)
+    REFERENCES SpecificSin (idSpecificSin)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+-- -----------------------------------------------------
+-- Table Transfer
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Transfer (
+  idTransfer INT NOT NULL,
+  idHuman INT NOT NULL,
+  TransferDate DATE NOT NULL,
+  TransferDirection VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idTransfer),
+  CONSTRAINT fk_SentToPurgatory_Tormented1
+    FOREIGN KEY (idHuman)
+    REFERENCES Tormented (idTormented)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Table Watcher
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS Watcher (
+  idWatcher INT NOT NULL,
+  WatcherName VARCHAR(45) NOT NULL,
+  idWatcherType INT NOT NULL,
+  idPunishment VARCHAR(45) NOT NULL,
+  WatcherAge INT NULL,
+  PRIMARY KEY (idWatcher),
+  CONSTRAINT fk_Watcher_WatcherType1
+    FOREIGN KEY (idWatcherType)
+    REFERENCES WatcherType (idWatcherType)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_Watcher_Punishment1
+    FOREIGN KEY (idPunishment)
+    REFERENCES Punishment (idPunishment)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+
+
+-- -----------------------------------------------------
+-- Data for table WatcherType
+-- -----------------------------------------------------
+
+INSERT INTO WatcherType (idWatcherType, WatcherTypeName) VALUES (1, 'Бесы');
+INSERT INTO WatcherType (idWatcherType, WatcherTypeName) VALUES (2, 'Гончие');
+INSERT INTO WatcherType (idWatcherType, WatcherTypeName) VALUES (3, 'Гарпии');
+INSERT INTO WatcherType (idWatcherType, WatcherTypeName) VALUES (4, 'Валера');
+INSERT INTO WatcherType (idWatcherType, WatcherTypeName) VALUES (5, 'Дима');
+
+
+
+-- -----------------------------------------------------
+-- Data for table GenericSin
+-- -----------------------------------------------------
+
+INSERT INTO GenericSin (idGenericSin, GenericSinName) VALUES (1, 'BT');
+INSERT INTO GenericSin (idGenericSin, GenericSinName) VALUES (2, 'Наслаждение');
+
+
+-- -----------------------------------------------------
+-- Data for table Circle
+-- -----------------------------------------------------
+
+INSERT INTO Circle (idCircle, idGenericSin, CircleName) VALUES (1, 1, 'First');
+INSERT INTO Circle (idCircle, idGenericSin, CircleName) VALUES (2, 2, 'Второй');
+INSERT INTO Circle (idCircle, idGenericSin, CircleName) VALUES (DEFAULT, DEFAULT, NULL);
+
+
+
+-- -----------------------------------------------------
+-- Data for table Punishment
+-- -----------------------------------------------------
+
+INSERT INTO Punishment (idPunishment, PunishmentName, PunishmentEXP, idWatcherType, PunismentRequiredWatcherAmountOnOne, PunishmentCapacity) VALUES ('1', 'Кипение в котлах при t=1000', 100, 1, 1, 1000);
+INSERT INTO Punishment (idPunishment, PunishmentName, PunishmentEXP, idWatcherType, PunismentRequiredWatcherAmountOnOne, PunishmentCapacity) VALUES ('2', 'Кипение в котлах при T=0.0000001', 1000, 1, 1, 1000);
+INSERT INTO Punishment (idPunishment, PunishmentName, PunishmentEXP, idWatcherType, PunismentRequiredWatcherAmountOnOne, PunishmentCapacity) VALUES ('3', 'Терзание псами', 100, 2, 1, 1000);
+INSERT INTO Punishment (idPunishment, PunishmentName, PunishmentEXP, idWatcherType, PunismentRequiredWatcherAmountOnOne, PunishmentCapacity) VALUES ('4', 'Охота гарпий', 100, 3, 1, 1000);
+INSERT INTO Punishment (idPunishment, PunishmentName, PunishmentEXP, idWatcherType, PunismentRequiredWatcherAmountOnOne, PunishmentCapacity) VALUES ('5', 'Сдача лаб по проге.', 10000000, 4, 1, 1);
+INSERT INTO Punishment (idPunishment, PunishmentName, PunishmentEXP, idWatcherType, PunismentRequiredWatcherAmountOnOne, PunishmentCapacity) VALUES ('6', 'Создание курсача на MySQL', 100000000, 5, 1, 1);
+
+
+-- -----------------------------------------------------
+-- Data for table SpecificSin
+-- -----------------------------------------------------
+
+INSERT INTO SpecificSin (idSpecificSin, idGenericSin, SpecificSinName) VALUES (2, 1, 'Database');
+INSERT INTO SpecificSin (idSpecificSin, idGenericSin, SpecificSinName) VALUES (3, 1, 'Programming');
+INSERT INTO SpecificSin (idSpecificSin, idGenericSin, SpecificSinName) VALUES (4, 2, 'Чревоугодие');
+INSERT INTO SpecificSin (idSpecificSin, idGenericSin, SpecificSinName) VALUES (5, 2, 'Прелюбодеяние');
+INSERT INTO SpecificSin (idSpecificSin, idGenericSin, SpecificSinName) VALUES (1, 1, 'Учится на ВТ.');
+INSERT INTO SpecificSin (idSpecificSin, idGenericSin, SpecificSinName) VALUES (6, 1, 'Быть Артуром.');
+
+
+-- -----------------------------------------------------
+-- Data for table SubCircle
+-- -----------------------------------------------------
+
+INSERT INTO SubCircle (idSubCircle, idCircle, idSpecificSin, idPunishment, SubCirclePunishmentMaxAmount) VALUES (1, 1, 2, '1', 10);
+INSERT INTO SubCircle (idSubCircle, idCircle, idSpecificSin, idPunishment, SubCirclePunishmentMaxAmount) VALUES (2, 1, 3, '2', 10);
+INSERT INTO SubCircle (idSubCircle, idCircle, idSpecificSin, idPunishment, SubCirclePunishmentMaxAmount) VALUES (3, 2, 4, '3', 10);
+INSERT INTO SubCircle (idSubCircle, idCircle, idSpecificSin, idPunishment, SubCirclePunishmentMaxAmount) VALUES (4, 2, 5, '4', 10);
+INSERT INTO SubCircle (idSubCircle, idCircle, idSpecificSin, idPunishment, SubCirclePunishmentMaxAmount) VALUES (5, 1, 1, '5', 1);
+INSERT INTO SubCircle (idSubCircle, idCircle, idSpecificSin, idPunishment, SubCirclePunishmentMaxAmount) VALUES (6, 1, 6, '6', 1);
+
+
+
+
+-- -----------------------------------------------------
+-- Data for table Guardian
+-- -----------------------------------------------------
+
+INSERT INTO Guardian (idGuardian, idCircle, GuardianName, GuardianMercy) VALUES (1, 1, 'Haron', 1);
+INSERT INTO Guardian (idGuardian, idCircle, GuardianName, GuardianMercy) VALUES (2, 1, 'Ваня', 0);
+INSERT INTO Guardian (idGuardian, idCircle, GuardianName, GuardianMercy) VALUES (3, 2, 'Иван', 3);
+
+-- -----------------------------------------------------
+-- Data for table Tormented
+-- -----------------------------------------------------
+
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (1, 1, 'Petr', TRUE, '1.01.2000');
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (2, 1, 'Petya', TRUE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (3, 2, 'A', FALSE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (4, 2, 'B', TRUE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (5, 3, 'C', FALSE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (6, 3, 'D', FALSE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (7, 4, 'E', FALSE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (8, 4, 'F', TRUE, NULL);
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (9, 5, 'Dima', TRUE, '09.04.2000');
+INSERT INTO Tormented (idTormented, idSubCircle, TormentedName, TormentedIsMan, TormentedDateOfDeath) VALUES (10, 6, 'Артур', TRUE, '09.04.2000');
+
+
+
+-- -----------------------------------------------------
+-- Data for table Assignment
+-- -----------------------------------------------------
+
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (1, '12.03.2000', 1, 1, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (2, '13.05.2012', 2, 1, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (3, '12.12.2142', 1, 2, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (4, '12.12.3244', 2, 2, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (5, '21.12.2121', 2, 3, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (6, '12.12.2311', 2, 3, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (7, '1.10.2011', 2, 4, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (8, '10.10.2010', 1, 4, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (9, '10.10.2010', 2, 5, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (10, '05.02.2018', 1, 6, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (2, '10.10.2000', 1, 4, TRUE, 0);
+INSERT INTO Assignment (idTormented, AssignmentDate, idGuardian, idSubCircle, AssignmentApproval, TormentedSurrentPain) VALUES (2, '12.10.2000', 3, 4, FALSE, 100);
+
+
+-- -----------------------------------------------------
+-- Data for table Tormented_has_SpecificSin
+-- -----------------------------------------------------
+
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (1, 2, 100);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (1, 3, 200);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (2, 1, 100);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (3, 5, 1000);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (3, 4, 50);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (4, 2, 70);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (4, 5, 30);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (5, 2, 80);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (6, 3, 90);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (6, 4, 150);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (7, 3, 170);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (7, 2, 90);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (8, 1, 342);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (8, 4, 231);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (9, 5, 412);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (10, 6, 153);
+INSERT INTO Tormented_has_SpecificSin (Tormented_idTormented, SpecificSin_idSpecificSin, SeverityOfTheSin) VALUES (10, 5, 129);
+
+
+
+-- -----------------------------------------------------
+-- Data for table Transfer
+-- -----------------------------------------------------
+
+INSERT INTO Transfer (idTransfer, idHuman, TransferDate, TransferDirection) VALUES (1, 1, '11.03.2000', 'HEAVEN');
+INSERT INTO Transfer (idTransfer, idHuman, TransferDate, TransferDirection) VALUES (2, 2, '12.03.2000', 'PURGATORY');
+INSERT INTO Transfer (idTransfer, idHuman, TransferDate, TransferDirection) VALUES (3, 10, '13.03.2000', 'HELL');
+
+
