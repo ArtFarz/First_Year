@@ -1,0 +1,164 @@
+CREATE TABLE IF NOT EXISTS WatcherType (
+  idWatcherType INT NOT NULL,
+  WatcherTypeName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idWatcherType));
+
+CREATE TABLE IF NOT EXISTS GenericSin (
+  idGenericSin INT NOT NULL,
+  GenericSinName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idGenericSin));
+
+CREATE TABLE IF NOT EXISTS Circle (
+  idCircle INT NOT NULL,
+  idGenericSin INT NOT NULL,
+  CircleName VARCHAR(45) NULL,
+  PRIMARY KEY (idCircle),
+  CONSTRAINT fk_Circle_GenericSin1
+    FOREIGN KEY (idGenericSin)
+    REFERENCES GenericSin (idGenericSin)
+	ON DELETE RESTRICT
+    ON UPDATE CASCADE);
+
+
+CREATE TABLE IF NOT EXISTS Punishment (
+  idPunishment INT NOT NULL,
+  PunishmentName VARCHAR(45) NOT NULL,
+  PunishmentEXP INT NOT NULL CHECK (PunishmentEXP > 0),
+  idWatcherType INT NOT NULL,
+  PunismentRequiredWatcherAmountOnOne INT NOT NULL,
+  PunishmentCapacity INT NULL CHECK (PunishmentCapacity > 0),
+  PRIMARY KEY (idPunishment),
+  CONSTRAINT fk_Punishment_WatcherType1
+    FOREIGN KEY (idWatcherType)
+    REFERENCES WatcherType (idWatcherType)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS SpecificSin (
+  idSpecificSin INT NOT NULL,
+  idGenericSin INT NOT NULL,
+  SpecificSinName VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idSpecificSin),
+  CONSTRAINT fk_SpecificSin_GenericSin1
+    FOREIGN KEY (idGenericSin)
+    REFERENCES GenericSin (idGenericSin)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS SubCircle (
+  idSubCircle INT NOT NULL,
+  idCircle INT NOT NULL,
+  idSpecificSin INT NOT NULL,
+  idPunishment INT NOT NULL,
+  SubCirclePunishmentMaxAmount INT NULL,
+  PRIMARY KEY (idSubCircle),
+  CONSTRAINT fk_SubCircle_Circle1
+    FOREIGN KEY (idCircle)
+    REFERENCES Circle (idCircle)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_SubCircle_Punishment1
+    FOREIGN KEY (idPunishment)
+    REFERENCES Punishment (idPunishment)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_SubCircle_SpecificSin1
+    FOREIGN KEY (idSpecificSin)
+    REFERENCES SpecificSin (idSpecificSin)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS Guardian (
+  idGuardian INT NOT NULL,
+  idCircle INT NOT NULL,
+  GuardianName VARCHAR(45) NOT NULL,
+  GuardianMercy INT NULL CHECK (GuardianMercy > 0),
+  PRIMARY KEY (idGuardian),
+  CONSTRAINT fk_Guardian_Circle1
+    FOREIGN KEY (idCircle)
+    REFERENCES Circle (idCircle)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS Tormented (
+  idTormented INT NOT NULL,
+  idSubCircle INT NOT NULL,
+  TormentedName VARCHAR(45) NOT NULL,
+  TormentedIsMan BOOLEAN NULL,
+  TormentedDateOfDeath DATE NULL,
+  PRIMARY KEY (idTormented),
+  CONSTRAINT fk_Tormented_SubCircle1
+    FOREIGN KEY (idSubCircle)
+    REFERENCES SubCircle (idSubCircle)
+    ON DELETE RESTRICT
+	ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS Assignment (
+  idTormented INT NOT NULL,
+  AssignmentDate DATE NOT NULL,
+  idGuardian INT NOT NULL,
+  idSubCircle INT NOT NULL,
+  AssignmentApproval BOOLEAN NOT NULL,
+  TormentedSurrentPain INT NOT NULL,
+  PRIMARY KEY (idTormented, AssignmentDate),
+  CONSTRAINT fk_Assignment_Guardian1
+    FOREIGN KEY (idGuardian)
+    REFERENCES Guardian (idGuardian)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_Assignment_SubCircle1
+    FOREIGN KEY (idSubCircle)
+    REFERENCES SubCircle (idSubCircle)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_Assignment_Tormented1
+    FOREIGN KEY (idTormented)
+    REFERENCES Tormented (idTormented)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS Tormented_has_SpecificSin (
+  Tormented_idTormented INT NOT NULL,
+  SpecificSin_idSpecificSin INT NOT NULL,
+  SeverityOfTheSin INT NOT NULL,
+  PRIMARY KEY (Tormented_idTormented, SpecificSin_idSpecificSin),
+  CONSTRAINT fk_Tormented_has_SpecificSin_Tormented1
+    FOREIGN KEY (Tormented_idTormented)
+    REFERENCES Tormented (idTormented)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_Tormented_has_SpecificSin_SpecificSin1
+    FOREIGN KEY (SpecificSin_idSpecificSin)
+    REFERENCES SpecificSin (idSpecificSin)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS Transfer (
+  idTransfer INT NOT NULL,
+  idHuman INT NOT NULL,
+  TransferDate DATE NOT NULL,
+  TransferDirection VARCHAR(45) NOT NULL,
+  PRIMARY KEY (idTransfer),
+  CONSTRAINT fk_SentToPurgatory_Tormented1
+    FOREIGN KEY (idHuman)
+    REFERENCES Tormented (idTormented)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE);
+
+CREATE TABLE IF NOT EXISTS Watcher (
+  idWatcher INT NOT NULL,
+  WatcherName VARCHAR(45) NOT NULL,
+  idWatcherType INT NOT NULL,
+  idPunishment INT NULL,
+  WatcherAge INT NULL,
+  PRIMARY KEY (idWatcher),
+  CONSTRAINT fk_Watcher_WatcherType1
+    FOREIGN KEY (idWatcherType)
+    REFERENCES WatcherType (idWatcherType)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_Watcher_Punishment1
+    FOREIGN KEY (idPunishment)
+    REFERENCES Punishment (idPunishment)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE);

@@ -1,0 +1,1 @@
+DROP TABLE assignment, circle, genericsin, guardian, punishment, specificsin, subcircle, tormented, tormented_has_specificsin, transfer,watcher, watchertype;
